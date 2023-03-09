@@ -8,8 +8,12 @@
 
 /* appearance */
 static const unsigned int borderpx  = 2;        /* border pixel of windows */
-static const unsigned int gappx     = 5;        /* gaps between windows */
 static const unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int gappih    = 20;       /* horiz inner gap between windows */
+static const unsigned int gappiv    = 10;       /* vert inner gap between windows */
+static const unsigned int gappoh    = 10;       /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov    = 10;       /* vert outer gap between windows and screen edge */
+static       int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static const int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -64,11 +68,26 @@ static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
+#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
+#include "vanitygaps.c"
+
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
+	{ "[@]",      spiral },
+	{ "[\\]",     dwindle },
+	{ "H[]",      deck },
+	{ "TTT",      bstack },
+	{ "===",      bstackhoriz },
+	{ "HHH",      grid },
+	{ "###",      nrowgrid },
+	{ "---",      horizgrid },
+	{ ":::",      gaplessgrid },
+	{ "|M|",      centeredmaster },
+	{ ">M>",      centeredfloatingmaster },
+	{ "><>",      NULL },    /* no layout function means floating behavior */
+	{ NULL,       NULL },
 };
 
 /* key definitions */
@@ -151,14 +170,14 @@ static const Key keys[] = {
 	/* { MODKEY,			XK_backslash,	spawn,		SHCMD("") }, */
 	/* { MODKEY|ShiftMask,		XK_backslash,	spawn,		SHCMD("") }, */
 
-	/* { MODKEY,			XK_a,		spawn,		SHCMD("") }, */
-	/* { MODKEY|ShiftMask,		XK_a,		spawn,		SHCMD("") }, */
+	{ MODKEY,			XK_a,		togglegaps,	{0} },
+	{ MODKEY|ShiftMask,		XK_a,		defaultgaps,	{0} },
 	/* { MODKEY,			XK_s,		spawn,		SHCMD("") }, */
 	/* { MODKEY|ShiftMask,		XK_s,		spawn,		SHCMD("") }, */
 	{ MODKEY,                       XK_d,		spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,		XK_d,		spawn,		{.v = (const char*[]){ "passmenu", NULL } } },
 	{ MODKEY,			XK_f,		togglefullscr,  {0} },
-	{ MODKEY|ShiftMask,             XK_f,		setlayout,      {.v = &layouts[1]} }, /* free */
+	{ MODKEY|ShiftMask,             XK_f,		setlayout,      {.v = &layouts[13]} }, /* free */
 	/* { MODKEY,			XK_g,		spawn,		SHCMD("") }, */
 	/* { MODKEY|ShiftMask,		XK_g,		spawn,		SHCMD("") }, */
 	{ MODKEY,                       XK_h,		setmfact,       {.f = -0.05} },
@@ -170,9 +189,9 @@ static const Key keys[] = {
 	{ MODKEY,             		XK_Return,	spawn,          {.v = termcmd } },
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
-	/* { MODKEY,			XK_z,		spawn,		SHCMD("") }, */
+	{ MODKEY,			XK_z,		incrgaps,	{ .i = +3 } },
 	/* { MODKEY|ShiftMask,		XK_z,		spawn,		SHCMD("") }, */
-	/* { MODKEY,			XK_x,		spawn,		SHCMD("") }, */
+	{ MODKEY,			XK_x,		incrgaps,	{ .i = -3 } },
 	/* { MODKEY|ShiftMask,		XK_x,		spawn,		SHCMD("") }, */
 	/* { MODKEY,			XK_c,		spawn,		SHCMD("") }, */
 	/* { MODKEY|ShiftMask,		XK_c,		spawn,		SHCMD("") }, */
@@ -181,7 +200,7 @@ static const Key keys[] = {
 	{ MODKEY,              		XK_n,		shiftview,	{ .i = +1 } },
 	/* { MODKEY|ShiftMask,		XK_n,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_m,		togglescratch,	{.ui = 1} },
-	{ MODKEY|ShiftMask,             XK_m,		setlayout,      {.v = &layouts[2]} }, /* monocle */
+	{ MODKEY|ShiftMask,             XK_m,		setlayout,      {.v = &layouts[1]} }, /* monocle */
 	{ MODKEY,                       XK_comma,  	focusmon,       {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  	tagmon,         {.i = -1 } },
 	{ MODKEY,                       XK_period, 	focusmon,       {.i = +1 } },
@@ -217,7 +236,7 @@ static const Key keys[] = {
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
+	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[13]} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button1,        sigdwmblocks,   {.i = 1} },
 	{ ClkStatusText,        0,              Button2,        sigdwmblocks,   {.i = 2} },
