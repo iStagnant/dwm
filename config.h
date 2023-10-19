@@ -59,7 +59,7 @@ static const Rule rules[] = {
 	{ NULL,		NULL,		"Event Tester",	0,		0,	0,		1,	-1 }, /* xev */
 	{ NULL,		"spterm",	NULL,		SPTAG(0),	1,	1,		0,      -1 },
 	{ NULL,		"yt",		NULL,		SPTAG(1),	1,	1,		0,	-1 },
-	{ NULL,		"qalc",		NULL,		SPTAG(2),	1,	1,		0,	-1 },
+	{ NULL,		NULL,		"qalc",		SPTAG(2),	1,	1,		0,	-1 },
 };
 
 /* layout(s) */
